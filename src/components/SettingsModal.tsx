@@ -49,15 +49,15 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="px-6 py-4 border-b border-gray-100">
-                    <h2 className="text-lg font-semibold text-gray-800">Settings</h2>
+        <div className="settings-overlay" onClick={onClose}>
+            <div className="settings-card" onClick={(e) => e.stopPropagation()}>
+                <div className="settings-header">
+                    <h2 className="settings-title">Settings</h2>
                 </div>
 
-                <div className="px-6 py-5 space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <div className="settings-body">
+                    <div className="settings-field">
+                        <label className="settings-label">
                             OpenAI API Key
                         </label>
                         <input
@@ -65,34 +65,34 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             value={apiKey}
                             onChange={(e) => setApiKey(e.target.value)}
                             placeholder="sk-..."
-                            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            className="settings-input"
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                            Base URL <span className="text-gray-400 font-normal">(optional)</span>
+                    <div className="settings-field">
+                        <label className="settings-label">
+                            Base URL <span className="settings-label-hint">(optional)</span>
                         </label>
                         <input
                             type="text"
                             value={baseURL}
                             onChange={(e) => setBaseURL(e.target.value)}
                             placeholder="https://api.openai.com/v1"
-                            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            className="settings-input"
                         />
-                        <p className="text-xs text-gray-500 mt-1.5">
+                        <p className="settings-hint">
                             For OpenAI-compatible APIs (Ollama, LM Studio, Groq, etc.)
                         </p>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <div className="settings-field">
+                        <label className="settings-label">
                             Model
                         </label>
                         <select
                             value={model}
                             onChange={(e) => setModel(e.target.value)}
-                            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                            className="settings-select"
                         >
                             {COMMON_MODELS.map((m) => (
                                 <option key={m.id} value={m.id}>
@@ -102,33 +102,33 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </select>
                     </div>
 
-                    <div className="pt-2 border-t border-gray-100">
-                        <button
-                            onClick={handleReset}
-                            className="text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
-                        >
-                            🗑️ Reset all progress
-                        </button>
-                    </div>
+                    <hr className="settings-divider" />
+
+                    <button
+                        onClick={handleReset}
+                        className="btn-danger"
+                    >
+                        🗑️ Reset all progress
+                    </button>
                 </div>
 
-                <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <div className="settings-footer">
                     <button
                         onClick={handleClear}
-                        className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                        className="btn-text"
                     >
                         Clear
                     </button>
-                    <div className="flex gap-3">
+                    <div className="settings-footer-actions">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                            className="btn-text"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleSave}
-                            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-full transition-colors shadow-sm"
+                            className="btn-primary"
                         >
                             Save
                         </button>
