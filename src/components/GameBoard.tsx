@@ -185,6 +185,8 @@ export function GameBoard() {
         endY: number;
     } | null>(null);
     const [isSelecting, setIsSelecting] = useState(false);
+    const justSelectedRef = useRef(false);
+    const canvasElementsRef = useRef<CanvasElement[]>([]);
 
     const settings = useAppStore((state) => state.settings);
     const elements = useAppStore((state) => state.elements);
@@ -278,6 +280,11 @@ export function GameBoard() {
         return () => clearInterval(interval);
     }, [draggedId]);
 
+    // Keep canvasElementsRef in sync for document-level event handlers
+    useEffect(() => {
+        canvasElementsRef.current = canvasElements;
+    }, [canvasElements]);
+
     const handleDragStart = (id: string, x: number, y: number) => {
         setDraggedId(id);
         dragTrackingRef.current = { isDragging: true, elementId: id, x, y };
@@ -316,74 +323,86 @@ export function GameBoard() {
         setSelectedIds(new Set([id]));
     };
 
-    // Selection rectangle handlers
+    // Selection rectangle handlers - uses document-level listeners so
+    // selection works even when the mouse leaves the canvas area
     const handleSelectionStart = (e: React.MouseEvent) => {
         if (e.target !== e.currentTarget) return;
 
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const canvasEl = e.currentTarget as HTMLElement;
+        const rect = canvasEl.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
         setIsSelecting(true);
+        justSelectedRef.current = false;
         setSelectionRect({ startX: x, startY: y, endX: x, endY: y });
+
+        const handleMove = (moveEvent: MouseEvent) => {
+            const r = canvasEl.getBoundingClientRect();
+            const mx = moveEvent.clientX - r.left;
+            const my = moveEvent.clientY - r.top;
+
+            setSelectionRect((prev) => prev ? { ...prev, endX: mx, endY: my } : null);
+        };
+
+        const handleUp = () => {
+            document.removeEventListener("mousemove", handleMove);
+            document.removeEventListener("mouseup", handleUp);
+
+            // Read the latest selection rect via functional updater
+            setSelectionRect((currentRect) => {
+                if (currentRect) {
+                    const { startX: sx, startY: sy, endX: ex, endY: ey } = currentRect;
+                    const selLeft = Math.min(sx, ex);
+                    const selTop = Math.min(sy, ey);
+                    const selWidth = Math.abs(ex - sx);
+                    const selHeight = Math.abs(ey - sy);
+
+                    // Only select if rectangle is large enough
+                    if (selWidth > 10 || selHeight > 10) {
+                        const selected = new Set<string>();
+                        const selRight = selLeft + selWidth;
+                        const selBottom = selTop + selHeight;
+
+                        // Intersection-based hit test against actual element bounds
+                        canvasElementsRef.current.forEach((el) => {
+                            const elRight = el.x + 100;
+                            const elBottom = el.y + 46;
+
+                            if (
+                                el.x < selRight
+                                && elRight > selLeft
+                                && el.y < selBottom
+                                && elBottom > selTop
+                            ) {
+                                selected.add(el.id);
+                            }
+                        });
+
+                        if (selected.size > 0) {
+                            setSelectedIds(selected);
+                            justSelectedRef.current = true;
+                        }
+                    }
+                }
+
+                setIsSelecting(false);
+
+                return null;
+            });
+        };
+
+        document.addEventListener("mousemove", handleMove);
+        document.addEventListener("mouseup", handleUp);
     };
 
-    const handleSelectionMove = (e: React.MouseEvent) => {
-        if (!isSelecting || !selectionRect) return;
-
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        setSelectionRect((prev) => prev ? { ...prev, endX: x, endY: y } : null);
-    };
-
-    const handleSelectionEnd = () => {
-        if (!isSelecting || !selectionRect) {
-            setIsSelecting(false);
+    const handleCanvasClick = (e: React.MouseEvent) => {
+        if (justSelectedRef.current) {
+            justSelectedRef.current = false;
 
             return;
         }
 
-        const { startX, startY, endX, endY } = selectionRect;
-        const left = Math.min(startX, endX);
-        const top = Math.min(startY, endY);
-        const width = Math.abs(endX - startX);
-        const height = Math.abs(endY - startY);
-
-        // Only select if rectangle is large enough
-        if (width > 10 || height > 10) {
-            const selected = new Set<string>();
-
-            // Element positions are stored without scale, but displayed at 0.5 scale
-            // The visual center of an element at (el.x, el.y) with scale 0.5 is approximately at:
-            // (el.x + 45, el.y + 45) because scale 0.5 means visual half-size from 90px
-            canvasElements.forEach((el) => {
-                // Element is 46px tall, ~120px wide
-                // Visual center is at (el.x + 60, el.y + 23)
-                const elCenterX = el.x + 60;
-                const elCenterY = el.y + 23;
-
-                if (
-                    elCenterX >= left &&
-                    elCenterX <= left + width &&
-                    elCenterY >= top &&
-                    elCenterY <= top + height
-                ) {
-                    selected.add(el.id);
-                }
-            });
-
-            if (selected.size > 0) {
-                setSelectedIds(selected);
-            }
-        }
-
-        setIsSelecting(false);
-        setSelectionRect(null);
-    };
-
-    const handleCanvasClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget && !isSelecting) {
             setSelectedIds(new Set());
         }
@@ -461,8 +480,6 @@ export function GameBoard() {
                     id="game-canvas"
                     className={`canvas ${isSelecting ? "selecting" : ""} ${sidebarOpen ? "" : "sidebar-closed"}`}
                     onMouseDown={handleSelectionStart}
-                    onMouseMove={handleSelectionMove}
-                    onMouseUp={handleSelectionEnd}
                     onClick={handleCanvasClick}
                 >
                     {/* Background stars */}
