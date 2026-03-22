@@ -81,7 +81,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             className="settings-input"
                         />
                         <p className="settings-hint">
-                            For OpenAI-compatible APIs (Ollama, LM Studio, Groq, etc.)
+                            For OpenAI-compatible APIs (llama.cpp, LM Studio, Groq, etc.)
                         </p>
                     </div>
 
