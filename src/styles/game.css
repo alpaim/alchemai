@@ -68,6 +68,8 @@
     padding: 0 14px;
     position: absolute;
     transition: background 0.12s, box-shadow 0.12s, rotate 0.1s;
+    user-select: none;
+    -webkit-user-select: none;
     white-space: nowrap;
     z-index: 1;
 }
