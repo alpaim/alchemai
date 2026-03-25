@@ -539,10 +539,10 @@ export function GameBoard() {
                         </div>
                     )}
 
-                    {/* API warning */}
-                    {!settings && (
+                    {/* AI status warning */}
+                    {settings?.provider === "none" && (
                         <div className="api-warning">
-                            ⚠️ Configure API key in settings to combine elements
+                            ℹ️ Playing without AI - drag and drop only. Enable AI in settings to combine elements.
                         </div>
                     )}
                 </div>
