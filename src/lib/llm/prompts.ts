@@ -23,10 +23,5 @@ EXAMPLES:
 Be surprising and creative! The goal is discovery and fun.`;
 
 export function buildCombinePrompt(first: string, second: string): string {
-    return `Combine these two elements and create something new:
-
-Element 1: ${first}
-Element 2: ${second}
-
-What do they make together? Reply with JSON only, no markdown.`;
+    return `${first} + ${second}`;
 }

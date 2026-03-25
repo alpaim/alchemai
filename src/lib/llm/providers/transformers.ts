@@ -156,7 +156,6 @@ export async function getModel(): Promise<TextGenerationPipeline | null> {
 export async function* streamCombination(
     _modelId: string,
     inferenceConfig: TransformersInferenceConfig,
-    systemPrompt: string,
     userPrompt: string,
     ensureModel: () => Promise<void>,
 ): AsyncGenerator<string> {
@@ -179,7 +178,6 @@ export async function* streamCombination(
     });
 
     const messages = [
-        { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
     ];
 

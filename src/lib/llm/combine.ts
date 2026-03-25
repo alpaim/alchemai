@@ -1,11 +1,12 @@
-import { SYSTEM_PROMPT, buildCombinePrompt } from "@/lib/llm/prompts";
+import { buildCombinePrompt } from "@/lib/llm/prompts";
 import { streamCombination as streamOpenAI } from "@/lib/llm/providers/openai";
 import {
     initializeTransformers,
     streamCombination as streamTransformers,
     isTransformersReady,
 } from "@/lib/llm/providers/transformers";
-import type { Element, CombinationResult, LLMConfig, ParsedCombinationResponse } from "@/lib/llm/types";
+import { alchemai_parser_no_emoji } from "@/lib/llm/parsers";
+import type { Element, CombinationResult, LLMConfig } from "@/lib/llm/types";
 import { generateId } from "@/lib/utils/id";
 
 // Re-export for convenience
@@ -15,27 +16,6 @@ const combinationCache = new Map<string, Element>();
 
 function getCacheKey(firstId: string, secondId: string): string {
     return [firstId, secondId].sort().join("+");
-}
-
-function parseCombinationResponse(response: string): ParsedCombinationResponse {
-    const cleaned = response.replace(/```json\n?|\n?```/g, "").trim();
-
-    try {
-        const parsed = JSON.parse(cleaned) as ParsedCombinationResponse;
-
-        return {
-            name: parsed.name || "Unknown",
-            emoji: parsed.emoji || null,
-            reasoning: parsed.reasoning || "Created through mysterious means...",
-        };
-    }
-    catch {
-        return {
-            name: "Unknown",
-            emoji: null,
-            reasoning: "The alchemy produced an unexpected result...",
-        };
-    }
 }
 
 export type ProgressCallback = (progress: {
@@ -90,7 +70,6 @@ export async function combineElements(
         for await (const chunk of streamTransformers(
             config.transformers.modelId,
             config.transformers.inference,
-            SYSTEM_PROMPT,
             prompt,
             () => ensureTransformersModel(config, onProgress),
         )) {
@@ -102,6 +81,9 @@ export async function combineElements(
         if (!config.openai) {
             throw new Error("OpenAI configuration is required when using OpenAI provider");
         }
+
+        // OpenAI still uses system prompt for non-finetuned models
+        const SYSTEM_PROMPT = "You are an engine for an alchemy game. Combine the two given elements logically or creatively to produce a new single element. Output ONLY the resulting element name without punctuation or explanations.";
 
         for await (const chunk of streamOpenAI(config.openai, SYSTEM_PROMPT, prompt)) {
             fullResponse += chunk;
@@ -119,7 +101,7 @@ export async function combineElements(
         throw new Error(`Unknown provider: ${config.provider}`);
     }
 
-    const parsed = parseCombinationResponse(fullResponse);
+    const parsed = alchemai_parser_no_emoji(fullResponse);
 
     const newElement: Element = {
         id: generateId(parsed.name),
