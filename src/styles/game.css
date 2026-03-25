@@ -384,6 +384,43 @@
     color: #040404;
 }
 
+.sidebar-item-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-item-wrapper .sidebar-item {
+    flex: 1;
+}
+
+.sidebar-item-delete {
+    position: absolute;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.sidebar-item-wrapper:hover .sidebar-item-delete {
+    opacity: 1;
+}
+
+.sidebar-item-delete:hover {
+    background: #dc2626;
+}
+
 /* ============================================
    Overlay (sidebar backdrop)
    ============================================ */

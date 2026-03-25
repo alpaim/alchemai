@@ -191,6 +191,9 @@ export function GameBoard() {
     const settings = useAppStore((state) => state.settings);
     const elements = useAppStore((state) => state.elements);
     const resetGame = useAppStore((state) => state.resetGame);
+    const removeElement = useAppStore((state) => state.removeElement);
+
+    const BASE_ELEMENTS = ["fire", "water", "earth", "air"];
 
     // Expose reset to window for debugging
     useEffect(() => {
@@ -583,18 +586,35 @@ export function GameBoard() {
                         </div>
 
                         <div className="sidebar-list">
-                            {filteredElements.map((element) => (
-                                <button
-                                    key={element.id}
-                                    className="sidebar-item"
-                                    onClick={() => handleSidebarItemClick(element)}
-                                >
-                                    <span className="sidebar-item-emoji">
-                                        {element.emoji || "❓"}
-                                    </span>
-                                    <span className="sidebar-item-name">{element.name}</span>
-                                </button>
-                            ))}
+                            {filteredElements.map((element) => {
+                                const isBaseElement = BASE_ELEMENTS.includes(element.id);
+
+                                return (
+                                    <div key={element.id} className="sidebar-item-wrapper">
+                                        <button
+                                            className="sidebar-item"
+                                            onClick={() => handleSidebarItemClick(element)}
+                                        >
+                                            <span className="sidebar-item-emoji">
+                                                {element.emoji || "❓"}
+                                            </span>
+                                            <span className="sidebar-item-name">{element.name}</span>
+                                        </button>
+                                        {!isBaseElement && (
+                                            <button
+                                                className="sidebar-item-delete"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeElement(element.id);
+                                                }}
+                                                title="Delete item"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 )}

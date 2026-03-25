@@ -24,6 +24,7 @@ interface AppState {
     activeCombination: { first: string; second: string } | null;
 
     addElement: (element: Element) => void;
+    removeElement: (id: string) => void;
     setElements: (elements: Record<string, Element>) => void;
     addHistory: (entry: { first: string; second: string; result: string }) => void;
     setSettings: (settings: LLMConfig) => void;
@@ -81,6 +82,14 @@ export const useAppStore = create<AppState>()(
                 set((state) => ({
                     elements: { ...state.elements, [element.id]: element },
                 })),
+
+            removeElement: (id) =>
+                set((state) => {
+                    const newElements = { ...state.elements };
+                    delete newElements[id];
+
+                    return { elements: newElements };
+                }),
 
             setElements: (elements) => set({ elements }),
 
