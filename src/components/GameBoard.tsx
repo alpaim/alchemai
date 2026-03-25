@@ -24,6 +24,23 @@ const dragTrackingRef = {
     },
 };
 
+// Mobile detection hook
+function useIsMobile() {
+    const [isMobile, setIsMobile] = useState(
+        typeof window !== "undefined" ? window.innerWidth < 640 : false,
+    );
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
+
+        window.addEventListener("resize", handleResize);
+
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    return isMobile;
+}
+
 // Generate random stars once
 const BACKGROUND_STARS = Array.from({ length: 50 }, (_, i) => ({
     id: i,
@@ -58,8 +75,8 @@ function CanvasElementItem({
     const dragState = useRef({
         active: false,
         moved: false,
-        mouseDownX: 0,
-        mouseDownY: 0,
+        startX: 0,
+        startY: 0,
         startLeft: 0,
         startTop: 0,
     });
@@ -72,8 +89,9 @@ function CanvasElementItem({
         }
     }, [x, y]);
 
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handlePointerDown = (e: React.PointerEvent) => {
         e.stopPropagation();
+        e.preventDefault();
 
         const el = elementRef.current;
         if (!el) return;
@@ -81,17 +99,19 @@ function CanvasElementItem({
         dragState.current = {
             active: true,
             moved: false,
-            mouseDownX: e.clientX,
-            mouseDownY: e.clientY,
+            startX: e.clientX,
+            startY: e.clientY,
             startLeft: parseInt(el.style.left || `${x}`, 10),
             startTop: parseInt(el.style.top || `${y}`, 10),
         };
 
-        const handleMove = (moveEvent: MouseEvent) => {
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
+        const handleMove = (moveEvent: PointerEvent) => {
             if (!dragState.current.active) return;
 
-            const dx = moveEvent.clientX - dragState.current.mouseDownX;
-            const dy = moveEvent.clientY - dragState.current.mouseDownY;
+            const dx = moveEvent.clientX - dragState.current.startX;
+            const dy = moveEvent.clientY - dragState.current.startY;
 
             if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
                 if (!dragState.current.moved) {
@@ -137,8 +157,8 @@ function CanvasElementItem({
                 elementRef.current.style.willChange = "";
             }
 
-            document.removeEventListener("mousemove", handleMove);
-            document.removeEventListener("mouseup", handleUp);
+            document.removeEventListener("pointermove", handleMove);
+            document.removeEventListener("pointerup", handleUp);
 
             if (dragState.current.moved) {
                 onDragEnd(id, finalX, finalY);
@@ -148,8 +168,8 @@ function CanvasElementItem({
             }
         };
 
-        document.addEventListener("mousemove", handleMove);
-        document.addEventListener("mouseup", handleUp);
+        document.addEventListener("pointermove", handleMove);
+        document.addEventListener("pointerup", handleUp);
     };
 
     const selectedClass = isSelected ? "instance-selected" : "";
@@ -158,7 +178,7 @@ function CanvasElementItem({
     return (
         <div
             ref={elementRef}
-            onMouseDown={handleMouseDown}
+            onPointerDown={handlePointerDown}
             className={`instance ${selectedClass} ${highlightedClass}`}
         >
             <span className="instance-emoji">{element.emoji || "❓"}</span>
@@ -176,6 +196,8 @@ export function GameBoard() {
     const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
     const [nextId, setNextId] = useState(1);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+
+    const isMobile = useIsMobile();
 
     // Selection rectangle state
     const [selectionRect, setSelectionRect] = useState<{
@@ -305,6 +327,30 @@ export function GameBoard() {
         if (!canvas) return;
 
         const rect = canvas.getBoundingClientRect();
+
+        // On mobile, place elements in the center with random spread
+        if (isMobile) {
+            const canvasHeight = sidebarOpen ? rect.height * 0.5 : rect.height;
+            const spreadX = ((nextId * 17) % 80) - 40;
+            const spreadY = ((nextId * 23) % 50) - 25;
+            const centerX = rect.width / 2 - 50 + spreadX;
+            const centerY = canvasHeight / 2 - 20 + spreadY;
+
+            setCanvasElements((prev) => [
+                ...prev,
+                {
+                    id: `canvas-${nextId}`,
+                    x: centerX,
+                    y: centerY,
+                    element,
+                },
+            ]);
+            setNextId((id) => id + 1);
+
+            return;
+        }
+
+        // Desktop: original behavior with spread
         const offsetX = ((nextId * 17) % 100) - 50;
         const offsetY = ((nextId * 23) % 60) - 30;
         const centerX = rect.width / 2 - 50 + offsetX;
@@ -327,8 +373,11 @@ export function GameBoard() {
     };
 
     // Selection rectangle handlers - uses document-level listeners so
-    // selection works even when the mouse leaves the canvas area
-    const handleSelectionStart = (e: React.MouseEvent) => {
+    // selection works even when the pointer leaves the canvas area
+    // Disabled on mobile to avoid conflicts with touch scrolling
+    const handleSelectionStart = (e: React.PointerEvent) => {
+        // Skip selection on mobile
+        if (isMobile) return;
         if (e.target !== e.currentTarget) return;
 
         const canvasEl = e.currentTarget as HTMLElement;
@@ -340,7 +389,9 @@ export function GameBoard() {
         justSelectedRef.current = false;
         setSelectionRect({ startX: x, startY: y, endX: x, endY: y });
 
-        const handleMove = (moveEvent: MouseEvent) => {
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
+        const handleMove = (moveEvent: PointerEvent) => {
             const r = canvasEl.getBoundingClientRect();
             const mx = moveEvent.clientX - r.left;
             const my = moveEvent.clientY - r.top;
@@ -349,8 +400,8 @@ export function GameBoard() {
         };
 
         const handleUp = () => {
-            document.removeEventListener("mousemove", handleMove);
-            document.removeEventListener("mouseup", handleUp);
+            document.removeEventListener("pointermove", handleMove);
+            document.removeEventListener("pointerup", handleUp);
 
             // Read the latest selection rect via functional updater
             setSelectionRect((currentRect) => {
@@ -395,11 +446,11 @@ export function GameBoard() {
             });
         };
 
-        document.addEventListener("mousemove", handleMove);
-        document.addEventListener("mouseup", handleUp);
+        document.addEventListener("pointermove", handleMove);
+        document.addEventListener("pointerup", handleUp);
     };
 
-    const handleCanvasClick = (e: React.MouseEvent) => {
+    const handleCanvasClick = (e: React.PointerEvent) => {
         if (justSelectedRef.current) {
             justSelectedRef.current = false;
 
@@ -470,7 +521,7 @@ export function GameBoard() {
 
     return (
         <>
-            <div className="container">
+            <div className={`container ${isMobile ? "mobile" : ""} ${isMobile && sidebarOpen ? "drawer-open" : ""}`}>
                 {/* Header */}
                 <div className="header">
                     <span style={{ fontSize: "28px" }}>⚗️</span>
@@ -481,9 +532,9 @@ export function GameBoard() {
                 {/* Canvas */}
                 <div
                     id="game-canvas"
-                    className={`canvas ${isSelecting ? "selecting" : ""} ${sidebarOpen ? "" : "sidebar-closed"}`}
-                    onMouseDown={handleSelectionStart}
-                    onClick={handleCanvasClick}
+                    className={`canvas ${isSelecting ? "selecting" : ""} ${!isMobile && !sidebarOpen ? "sidebar-closed" : ""} ${isMobile && sidebarOpen ? "drawer-open" : ""}`}
+                    onPointerDown={handleSelectionStart}
+                    onPointerUp={handleCanvasClick}
                 >
                     {/* Background stars */}
                     <div className="stars">
@@ -553,7 +604,7 @@ export function GameBoard() {
                 {/* Bottom left controls */}
                 <div className="controls-bottom">
                     <button className="btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                        ☰ Menu
+                        {isMobile ? (sidebarOpen ? "▼ Close" : "☰ Items") : "☰ Menu"}
                     </button>
                     <button className="btn" onClick={clearCanvas}>
                         Clear
@@ -561,62 +612,138 @@ export function GameBoard() {
                 </div>
 
                 {/* Bottom right controls */}
-                <div className={`controls-right ${sidebarOpen ? "" : "sidebar-closed"}`}>
+                <div className={`controls-right ${!isMobile && !sidebarOpen ? "sidebar-closed" : ""}`}>
                     <button className="btn btn-icon" onClick={() => setSettingsOpen(true)}>
                         ⚙️
                     </button>
                 </div>
 
-                {/* Sidebar */}
-                {sidebarOpen && (
-                    <div className="sidebar">
-                        <div className="sidebar-header">
-                            <h2 className="sidebar-title">Items</h2>
-                            <p className="sidebar-count">{filteredElements.length} discovered</p>
-                        </div>
-
-                        <div className="sidebar-search">
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search items..."
-                                className="sidebar-input"
-                            />
-                        </div>
-
-                        <div className="sidebar-list">
-                            {filteredElements.map((element) => {
-                                const isBaseElement = BASE_ELEMENTS.includes(element.id);
-
-                                return (
-                                    <div key={element.id} className="sidebar-item-wrapper">
-                                        <button
-                                            className="sidebar-item"
-                                            onClick={() => handleSidebarItemClick(element)}
-                                        >
-                                            <span className="sidebar-item-emoji">
-                                                {element.emoji || "❓"}
-                                            </span>
-                                            <span className="sidebar-item-name">{element.name}</span>
-                                        </button>
-                                        {!isBaseElement && (
-                                            <button
-                                                className="sidebar-item-delete"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    removeElement(element.id);
-                                                }}
-                                                title="Delete item"
-                                            >
-                                                ×
-                                            </button>
-                                        )}
+                {/* Sidebar - Drawer on mobile */}
+                {isMobile ? (
+                    <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+                        {/* Handle - always visible */}
+                        <div
+                            className="sidebar-handle"
+                            onClick={() => setSidebarOpen(!sidebarOpen)}
+                        >
+                            <div className="sidebar-handle-bar" />
+                            {sidebarOpen && (
+                                <div className="sidebar-handle-content">
+                                    <div className="sidebar-handle-left">
+                                        <h2 className="sidebar-title">Items</h2>
+                                        <span className="sidebar-count">{filteredElements.length}</span>
                                     </div>
-                                );
-                            })}
+                                    <button
+                                        className="btn btn-icon"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSidebarOpen(false);
+                                        }}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            )}
                         </div>
+
+                        {/* Content - only visible when open */}
+                        {sidebarOpen && (
+                            <div className="sidebar-content">
+                                <div className="sidebar-search">
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder="Search items..."
+                                        className="sidebar-input"
+                                    />
+                                </div>
+
+                                <div className="sidebar-list">
+                                    {filteredElements.map((element) => {
+                                        const isBaseElement = BASE_ELEMENTS.includes(element.id);
+
+                                        return (
+                                            <div key={element.id} className="sidebar-item-wrapper">
+                                                <button
+                                                    className="sidebar-item"
+                                                    onClick={() => handleSidebarItemClick(element)}
+                                                >
+                                                    <span className="sidebar-item-emoji">
+                                                        {element.emoji || "❓"}
+                                                    </span>
+                                                    <span className="sidebar-item-name">{element.name}</span>
+                                                </button>
+                                                {!isBaseElement && (
+                                                    <button
+                                                        className="sidebar-item-delete"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            removeElement(element.id);
+                                                        }}
+                                                        title="Delete item"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
+                ) : (
+                    sidebarOpen && (
+                        <div className="sidebar">
+                            <div className="sidebar-header">
+                                <h2 className="sidebar-title">Items</h2>
+                                <p className="sidebar-count">{filteredElements.length} discovered</p>
+                            </div>
+
+                            <div className="sidebar-search">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search items..."
+                                    className="sidebar-input"
+                                />
+                            </div>
+
+                            <div className="sidebar-list">
+                                {filteredElements.map((element) => {
+                                    const isBaseElement = BASE_ELEMENTS.includes(element.id);
+
+                                    return (
+                                        <div key={element.id} className="sidebar-item-wrapper">
+                                            <button
+                                                className="sidebar-item"
+                                                onClick={() => handleSidebarItemClick(element)}
+                                            >
+                                                <span className="sidebar-item-emoji">
+                                                    {element.emoji || "❓"}
+                                                </span>
+                                                <span className="sidebar-item-name">{element.name}</span>
+                                            </button>
+                                            {!isBaseElement && (
+                                                <button
+                                                    className="sidebar-item-delete"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        removeElement(element.id);
+                                                    }}
+                                                    title="Delete item"
+                                                >
+                                                    ×
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )
                 )}
 
                 <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
