@@ -1,10 +1,11 @@
-import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
 
-import type { LLMConfig } from "@/lib/llm/types";
+import { createOpenAI } from "@ai-sdk/openai";
+
+import type { OpenAIConfig } from "@/lib/llm/types";
 
 export async function* streamCombination(
-    config: LLMConfig,
+    config: OpenAIConfig,
     systemPrompt: string,
     userPrompt: string,
 ): AsyncGenerator<string> {

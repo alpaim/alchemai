@@ -523,3 +523,295 @@
     display: flex;
     gap: 8px;
 }
+
+/* ============================================
+   Settings Card Large
+   ============================================ */
+
+.settings-card-large {
+    max-width: 520px;
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.settings-section:last-of-type {
+    border-bottom: none;
+}
+
+.settings-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.settings-subsection-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    margin: 8px0 0;
+}
+
+.settings-radio-group {
+    display: flex;
+    gap: 16px;
+}
+
+.settings-radio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #040404;
+    cursor: pointer;
+}
+
+.settings-radio input[type="radio"] {
+    cursor: pointer;
+}
+
+.settings-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #040404;
+    cursor: pointer;
+}
+
+.settings-checkbox input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* ============================================
+   First Run Modal
+   ============================================ */
+
+.first-run-description {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.first-run-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    text-align: left;
+}
+
+.first-run-option:hover {
+    border-color: #3b82f6;
+    background: #f0f7ff;
+    transform: scale(1.01);
+}
+
+.first-run-option-primary {
+    border-color: #3b82f6;
+    background: linear-gradient(0deg, #eff6ff 0%, #fff 100%);
+}
+
+.first-run-option-primary:hover {
+    background: #eff6ff;
+}
+
+.first-run-option-icon {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.first-run-option-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.first-run-option-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #040404;
+}
+
+.first-run-option-desc {
+    font-size: 13px;
+    color: #666;
+}
+
+.first-run-skip {
+    padding: 0;
+    border: none;
+    background: none;
+    color: #888;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: color 0.15s;
+}
+
+.first-run-skip:hover {
+    color: #555;
+    text-decoration: underline;
+}
+
+.first-run-model-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f8f8;
+    border-radius: 8px;
+}
+
+.first-run-model-icon {
+    font-size: 24px;
+}
+
+.first-run-model-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #040404;
+}
+
+.first-run-progress-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.first-run-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e5e5;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.first-run-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.first-run-progress-text {
+    font-size: 13px;
+    color: #666;
+    text-align: right;
+}
+
+/* ============================================
+   First Run Error (WebGPU)
+   ============================================ */
+
+.first-run-error-icon {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.first-run-error-content {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.first-run-error-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #92400e;
+    margin: 0 0 12px 0;
+}
+
+.first-run-error-text {
+    font-size: 14px;
+    color: #78350f;
+    margin: 0 0 8px 0;
+    line-height: 1.5;
+}
+
+.first-run-error-list {
+    margin: 8px 0;
+    padding-left: 20px;
+    color: #78350f;
+}
+
+.first-run-error-list li {
+    font-size: 13px;
+    margin: 4px 0;
+    line-height: 1.4;
+}
+
+.first-run-doc-link {
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    color: #3b82f6;
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.first-run-doc-link:hover {
+    background: #eff6ff;
+    text-decoration: underline;
+}
+
+.first-run-error-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.first-run-error-list code {
+    background: rgba(0, 0, 0, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+    font-size: 12px;
+    color: #92400e;
+}
+
+.first-run-warning-banner {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #92400e;
+    text-align: center;
+}
+
+/* ============================================
+   Modal Text Selection
+   ============================================ */
+
+.settings-card,
+.settings-overlay {
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.settings-card * {
+    user-select: text;
+    -webkit-user-select: text;
+}

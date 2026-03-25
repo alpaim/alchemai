@@ -17,10 +17,29 @@ export interface CombinationResult {
     reasoning: string;
 }
 
-export interface LLMConfig {
+export type LLMProvider = "transformers" | "openai" | "none";
+
+export interface TransformersInferenceConfig {
+    maxTokens: number;
+    temperature: number;
+    topP: number;
+    topK: number;
+    doSample: boolean;
+}
+
+export interface OpenAIConfig {
     apiKey: string;
     baseURL: string | null;
     model: string;
+}
+
+export interface LLMConfig {
+    provider: LLMProvider;
+    transformers: {
+        modelId: string;
+        inference: TransformersInferenceConfig;
+    };
+    openai: OpenAIConfig | null;
 }
 
 export interface ParsedCombinationResponse {
@@ -28,3 +47,33 @@ export interface ParsedCombinationResponse {
     emoji: string | null;
     reasoning: string;
 }
+
+export interface ModelLoadingProgress {
+    state: "idle" | "loading" | "ready" | "error";
+    progress: number;
+    message: string;
+    usingFallback?: boolean;
+}
+
+export const DEFAULT_MODEL_ID = "LiquidAI/LFM2.5-1.2B-Thinking-ONNX";
+
+export const AVAILABLE_MODELS = [
+    { id: DEFAULT_MODEL_ID, name: "LFM2.5-1.2B-Thinking (Recommended)", size: "~750MB" },
+] as const;
+
+export const DEFAULT_INFERENCE_CONFIG: TransformersInferenceConfig = {
+    maxTokens: 512,
+    temperature: 0.7,
+    topP: 0.9,
+    topK: 50,
+    doSample: true,
+};
+
+export const DEFAULT_LLM_CONFIG: LLMConfig = {
+    provider: "transformers",
+    transformers: {
+        modelId: DEFAULT_MODEL_ID,
+        inference: DEFAULT_INFERENCE_CONFIG,
+    },
+    openai: null,
+};

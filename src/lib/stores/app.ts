@@ -1,7 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import type { Element, LLMConfig } from "@/lib/llm/types";
+import type {
+    Element,
+    LLMConfig,
+    ModelLoadingProgress,
+} from "@/lib/llm/types";
+import { DEFAULT_LLM_CONFIG } from "@/lib/llm/types";
 
 interface ThinkingCardState {
     isOpen: boolean;
@@ -12,14 +17,18 @@ interface ThinkingCardState {
 interface AppState {
     elements: Record<string, Element>;
     history: Array<{ first: string; second: string; result: string }>;
-    settings: LLMConfig | null;
+    settings: LLMConfig;
+    modelLoadingProgress: ModelLoadingProgress;
+    firstRunCompleted: boolean;
     thinkingCard: ThinkingCardState | null;
     activeCombination: { first: string; second: string } | null;
 
     addElement: (element: Element) => void;
     setElements: (elements: Record<string, Element>) => void;
     addHistory: (entry: { first: string; second: string; result: string }) => void;
-    setSettings: (settings: LLMConfig | null) => void;
+    setSettings: (settings: LLMConfig) => void;
+    setModelLoadingProgress: (progress: ModelLoadingProgress) => void;
+    setFirstRunCompleted: (completed: boolean) => void;
     setThinkingCard: (state: ThinkingCardState | null) => void;
     updateThinkingCardContent: (content: string) => void;
     setActiveCombination: (combo: { first: string; second: string } | null) => void;
@@ -62,7 +71,9 @@ export const useAppStore = create<AppState>()(
         (set) => ({
             elements: INITIAL_ELEMENTS,
             history: [],
-            settings: null,
+            settings: DEFAULT_LLM_CONFIG,
+            modelLoadingProgress: { state: "idle", progress: 0, message: "" },
+            firstRunCompleted: false,
             thinkingCard: null,
             activeCombination: null,
 
@@ -79,6 +90,12 @@ export const useAppStore = create<AppState>()(
                 })),
 
             setSettings: (settings) => set({ settings }),
+
+            setModelLoadingProgress: (modelLoadingProgress) =>
+                set({ modelLoadingProgress }),
+
+            setFirstRunCompleted: (firstRunCompleted) =>
+                set({ firstRunCompleted }),
 
             setThinkingCard: (thinkingCard) => set({ thinkingCard }),
 
@@ -102,11 +119,50 @@ export const useAppStore = create<AppState>()(
         }),
         {
             name: "alchemai-storage",
+            version: 2,
             partialize: (state) => ({
                 elements: state.elements,
                 history: state.history,
                 settings: state.settings,
+                firstRunCompleted: state.firstRunCompleted,
             }),
+            merge: (persistedState, currentState) => {
+                // Handle migration from old settings format
+                const persisted = persistedState as Partial<AppState>;
+                const merged = { ...currentState };
+
+                if (persisted.elements) {
+                    merged.elements = persisted.elements;
+                }
+
+                if (persisted.history) {
+                    merged.history = persisted.history;
+                }
+
+                if (persisted.firstRunCompleted !== undefined) {
+                    merged.firstRunCompleted = persisted.firstRunCompleted;
+                }
+
+                // Validate settings structure - if missing required fields, use defaults
+                if (persisted.settings) {
+                    const settings = persisted.settings as LLMConfig;
+
+                    if (
+                        settings.provider
+                        && settings.transformers?.modelId
+                        && settings.transformers?.inference
+                    ) {
+                        merged.settings = settings;
+                    }
+                    else {
+                        // Invalid/old settings structure - reset to defaults
+                        merged.settings = DEFAULT_LLM_CONFIG;
+                        merged.firstRunCompleted = false;
+                    }
+                }
+
+                return merged;
+            },
         },
     ),
 );
