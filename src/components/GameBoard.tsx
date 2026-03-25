@@ -330,11 +330,10 @@ export function GameBoard() {
 
         // On mobile, place elements in the center with random spread
         if (isMobile) {
-            const canvasHeight = sidebarOpen ? rect.height * 0.5 : rect.height;
             const spreadX = ((nextId * 17) % 80) - 40;
             const spreadY = ((nextId * 23) % 50) - 25;
             const centerX = rect.width / 2 - 50 + spreadX;
-            const centerY = canvasHeight / 2 - 20 + spreadY;
+            const centerY = rect.height / 2 - 20 + spreadY;
 
             setCanvasElements((prev) => [
                 ...prev,
