@@ -32,6 +32,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const settings = useAppStore((state) => state.settings);
     const setSettings = useAppStore((state) => state.setSettings);
     const resetGame = useAppStore((state) => state.resetGame);
+    const customElementsEnabled = useAppStore((state) => state.customElementsEnabled);
+    const setCustomElementsEnabled = useAppStore((state) => state.setCustomElementsEnabled);
 
     const safeSettings = getSafeSettings(settings);
 
@@ -317,6 +319,24 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     )}
 
                     <hr className="settings-divider" />
+
+                    <div className="settings-section">
+                        <h3 className="settings-section-title">Custom Elements</h3>
+
+                        <div className="settings-field">
+                            <label className="settings-checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={customElementsEnabled}
+                                    onChange={(e) => setCustomElementsEnabled(e.target.checked)}
+                                />
+                                <span>Enable custom element creation</span>
+                            </label>
+                            <p className="settings-hint">
+                                When enabled, you can add your own elements via the sidebar
+                            </p>
+                        </div>
+                    </div>
 
                     <button onClick={handleReset} className="btn-danger">
                         Reset all progress

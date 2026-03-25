@@ -421,6 +421,41 @@
     background: #dc2626;
 }
 
+.sidebar-item-badge {
+    font-size: 10px;
+    font-weight: 500;
+    color: #888;
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: auto;
+}
+
+.sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid #eee;
+    background: #fafafa;
+}
+
+.sidebar-footer-btn {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.sidebar-footer-btn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    background: #f0f7ff;
+}
+
 /* ============================================
    Overlay (sidebar backdrop)
    ============================================ */
@@ -574,7 +609,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow-y: auto;
     }
 
     .sidebar-header {
@@ -817,6 +852,12 @@
     font-size: 12px;
     color: #888;
     margin-top: 2px;
+}
+
+.settings-error {
+    font-size: 13px;
+    color: #e53e3e;
+    margin: 0;
 }
 
 .settings-select {

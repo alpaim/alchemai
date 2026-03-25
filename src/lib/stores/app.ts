@@ -18,16 +18,19 @@ interface AppState {
     elements: Record<string, Element>;
     history: Array<{ first: string; second: string; result: string }>;
     settings: LLMConfig;
+    customElementsEnabled: boolean;
     modelLoadingProgress: ModelLoadingProgress;
     firstRunCompleted: boolean;
     thinkingCard: ThinkingCardState | null;
     activeCombination: { first: string; second: string } | null;
 
     addElement: (element: Element) => void;
+    addCustomElement: (name: string, emoji: string) => void;
     removeElement: (id: string) => void;
     setElements: (elements: Record<string, Element>) => void;
     addHistory: (entry: { first: string; second: string; result: string }) => void;
     setSettings: (settings: LLMConfig) => void;
+    setCustomElementsEnabled: (enabled: boolean) => void;
     setModelLoadingProgress: (progress: ModelLoadingProgress) => void;
     setFirstRunCompleted: (completed: boolean) => void;
     setThinkingCard: (state: ThinkingCardState | null) => void;
@@ -73,6 +76,7 @@ export const useAppStore = create<AppState>()(
             elements: INITIAL_ELEMENTS,
             history: [],
             settings: DEFAULT_LLM_CONFIG,
+            customElementsEnabled: false,
             modelLoadingProgress: { state: "idle", progress: 0, message: "" },
             firstRunCompleted: false,
             thinkingCard: null,
@@ -82,6 +86,20 @@ export const useAppStore = create<AppState>()(
                 set((state) => ({
                     elements: { ...state.elements, [element.id]: element },
                 })),
+
+            addCustomElement: (name, emoji) => {
+                const id = name.toLowerCase().replace(/\s+/g, "_");
+                const element: Element = {
+                    id,
+                    name,
+                    emoji: emoji || null,
+                    discoveredAt: Date.now(),
+                    recipe: null,
+                };
+                set((state) => ({
+                    elements: { ...state.elements, [id]: element },
+                }));
+            },
 
             removeElement: (id) =>
                 set((state) => {
@@ -99,6 +117,9 @@ export const useAppStore = create<AppState>()(
                 })),
 
             setSettings: (settings) => set({ settings }),
+
+            setCustomElementsEnabled: (customElementsEnabled) =>
+                set({ customElementsEnabled }),
 
             setModelLoadingProgress: (modelLoadingProgress) =>
                 set({ modelLoadingProgress }),
@@ -133,6 +154,7 @@ export const useAppStore = create<AppState>()(
                 elements: state.elements,
                 history: state.history,
                 settings: state.settings,
+                customElementsEnabled: state.customElementsEnabled,
                 firstRunCompleted: state.firstRunCompleted,
             }),
             merge: (persistedState, currentState) => {
@@ -150,6 +172,10 @@ export const useAppStore = create<AppState>()(
 
                 if (persisted.firstRunCompleted !== undefined) {
                     merged.firstRunCompleted = persisted.firstRunCompleted;
+                }
+
+                if (persisted.customElementsEnabled !== undefined) {
+                    merged.customElementsEnabled = persisted.customElementsEnabled;
                 }
 
                 // Validate settings structure - if missing required fields, use defaults

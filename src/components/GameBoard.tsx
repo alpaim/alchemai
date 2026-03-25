@@ -4,6 +4,7 @@ import { useAppStore } from "@/lib/stores/app";
 import { useCombiner } from "@/lib/hooks/useCombiner";
 import { SettingsModal } from "@/components/SettingsModal";
 import { ThinkingCard } from "@/components/ThinkingCard";
+import { AddElementModal } from "@/components/AddElementModal";
 
 import type { Element } from "@/lib/llm/types";
 
@@ -214,6 +215,9 @@ export function GameBoard() {
     const elements = useAppStore((state) => state.elements);
     const resetGame = useAppStore((state) => state.resetGame);
     const removeElement = useAppStore((state) => state.removeElement);
+    const customElementsEnabled = useAppStore((state) => state.customElementsEnabled);
+
+    const [addElementModalOpen, setAddElementModalOpen] = useState(false);
 
     const BASE_ELEMENTS = ["fire", "water", "earth", "air"];
 
@@ -672,6 +676,9 @@ export function GameBoard() {
                                                         {element.emoji || "❓"}
                                                     </span>
                                                     <span className="sidebar-item-name">{element.name}</span>
+                                                    {element.recipe === null && !isBaseElement && (
+                                                        <span className="sidebar-item-badge">custom</span>
+                                                    )}
                                                 </button>
                                                 {!isBaseElement && (
                                                     <button
@@ -689,6 +696,17 @@ export function GameBoard() {
                                         );
                                     })}
                                 </div>
+
+                                {customElementsEnabled && (
+                                    <div className="sidebar-footer">
+                                        <button
+                                            className="sidebar-footer-btn"
+                                            onClick={() => setAddElementModalOpen(true)}
+                                        >
+                                            + Add Custom Element
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -724,6 +742,9 @@ export function GameBoard() {
                                                     {element.emoji || "❓"}
                                                 </span>
                                                 <span className="sidebar-item-name">{element.name}</span>
+                                                {element.recipe === null && !isBaseElement && (
+                                                    <span className="sidebar-item-badge">custom</span>
+                                                )}
                                             </button>
                                             {!isBaseElement && (
                                                 <button
@@ -741,11 +762,23 @@ export function GameBoard() {
                                     );
                                 })}
                             </div>
+
+                            {customElementsEnabled && (
+                                <div className="sidebar-footer">
+                                    <button
+                                        className="sidebar-footer-btn"
+                                        onClick={() => setAddElementModalOpen(true)}
+                                    >
+                                        + Add Custom Element
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )
                 )}
 
                 <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+                <AddElementModal isOpen={addElementModalOpen} onClose={() => setAddElementModalOpen(false)} />
                 <ThinkingCard />
             </div>
         </>
