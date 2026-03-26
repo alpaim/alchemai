@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useAppStore } from "@/lib/stores/app";
+import { ClearCacheConfirmModal, ClearCacheSuccessModal } from "./ClearCacheModals";
 import {
     AVAILABLE_MODELS,
     DEFAULT_INFERENCE_CONFIG,
@@ -63,6 +64,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [openaiModel, setOpenaiModel] = useState(
         safeSettings.openai?.model ?? "gpt-4o-mini",
     );
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
     function handleSave() {
         const newSettings = {
@@ -341,6 +344,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <button onClick={handleReset} className="btn-danger">
                         Reset all progress
                     </button>
+
+                    {provider === "transformers" && (
+                        <button onClick={() => setIsConfirmModalOpen(true)} className="btn-danger">
+                            Clear model cache
+                        </button>
+                    )}
                 </div>
 
                 <div className="settings-footer">
@@ -361,6 +370,21 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     </div>
                 </div>
             </div>
+
+            <ClearCacheConfirmModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={async () => {
+                    await useAppStore.getState().clearModelCache();
+                    setIsConfirmModalOpen(false);
+                    setIsSuccessModalOpen(true);
+                }}
+            />
+
+            <ClearCacheSuccessModal
+                isOpen={isSuccessModalOpen}
+                onClose={() => setIsSuccessModalOpen(false)}
+            />
         </div>
     );
 }

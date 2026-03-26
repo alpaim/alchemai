@@ -199,3 +199,30 @@ export async function unloadModel(): Promise<void> {
 
     currentDevice = null;
 }
+
+export async function clearModelCache(): Promise<void> {
+    await unloadModel();
+
+    try {
+        const cache = await caches.open("transformers-cache");
+        const keys = await cache.keys();
+        await Promise.all(keys.map((key) => cache.delete(key)));
+    }
+    catch {
+        // Cache API not available or already cleared
+    }
+
+    // Also clear any IndexedDB storage used by transformers
+    try {
+        const databases = await indexedDB.databases();
+
+        for (const db of databases) {
+            if (db.name?.includes("transformers") || db.name?.includes("hf")) {
+                indexedDB.deleteDatabase(db.name);
+            }
+        }
+    }
+    catch {
+        // IndexedDB not available
+    }
+}

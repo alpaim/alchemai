@@ -7,6 +7,7 @@ import type {
     ModelLoadingProgress,
 } from "@/lib/llm/types";
 import { DEFAULT_LLM_CONFIG } from "@/lib/llm/types";
+import { clearModelCache } from "@/lib/llm/providers/transformers";
 
 interface ThinkingCardState {
     isOpen: boolean;
@@ -37,6 +38,7 @@ interface AppState {
     updateThinkingCardContent: (content: string) => void;
     setActiveCombination: (combo: { first: string; second: string } | null) => void;
     resetGame: () => void;
+    clearModelCache: () => Promise<void>;
 }
 
 const INITIAL_ELEMENTS: Record<string, Element> = {
@@ -146,6 +148,13 @@ export const useAppStore = create<AppState>()(
                     elements: INITIAL_ELEMENTS,
                     history: [],
                 }),
+
+            clearModelCache: async () => {
+                await clearModelCache();
+                set({
+                    modelLoadingProgress: { state: "idle", progress: 0, message: "" },
+                });
+            },
         }),
         {
             name: "alchemai-storage",
