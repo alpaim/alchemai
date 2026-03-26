@@ -14,6 +14,8 @@ The fine-tuning pipeline (dataset, data processing, training, and model export) 
 
 **Why this matters:** This is a proof-of-concept that small, locally-running models can handle game mechanics - a niche but practical use case for game developers. And yeah, it's also just fun to play with.
 
+This project also serves as a demonstation of the rapid evolution of compact LLMs or Small Language Models (SLMs). What required expensive API calls to massive proprietary models just two years ago can now run smoothly entirely on the client side.
+
 ## Features
 
 - **100% Browser-Based** - No server required, runs entirely client-side
