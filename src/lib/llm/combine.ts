@@ -103,8 +103,6 @@ export async function combineElements(
 
     const parsed = alchemai_parser(fullResponse);
 
-    console.log("[DEBUG] Creating element:", { id: generateId(parsed.name), name: parsed.name, emoji: parsed.emoji });
-
     const newElement: Element = {
         id: generateId(parsed.name),
         name: parsed.name,
