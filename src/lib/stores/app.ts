@@ -42,28 +42,28 @@ interface AppState {
 const INITIAL_ELEMENTS: Record<string, Element> = {
     fire: {
         id: "fire",
-        name: "Fire",
+        name: "fire",
         emoji: "\ud83d\udd25",
         discoveredAt: 0,
         recipe: null,
     },
     water: {
         id: "water",
-        name: "Water",
+        name: "water",
         emoji: "\ud83d\udca7",
         discoveredAt: 0,
         recipe: null,
     },
     earth: {
         id: "earth",
-        name: "Earth",
+        name: "earth",
         emoji: "\ud83c\udf0d",
         discoveredAt: 0,
         recipe: null,
     },
     air: {
         id: "air",
-        name: "Air",
+        name: "air",
         emoji: "\ud83d\udca8",
         discoveredAt: 0,
         recipe: null,
@@ -91,7 +91,7 @@ export const useAppStore = create<AppState>()(
                 const id = name.toLowerCase().replace(/\s+/g, "_");
                 const element: Element = {
                     id,
-                    name,
+                    name: name.toLowerCase(),
                     emoji: emoji || null,
                     discoveredAt: Date.now(),
                     recipe: null,

@@ -5,6 +5,7 @@ import { useCombiner } from "@/lib/hooks/useCombiner";
 import { SettingsModal } from "@/components/SettingsModal";
 import { ThinkingCard } from "@/components/ThinkingCard";
 import { AddElementModal } from "@/components/AddElementModal";
+import { capitalize } from "@/lib/utils/capitalize";
 
 import type { Element } from "@/lib/llm/types";
 
@@ -183,7 +184,7 @@ function CanvasElementItem({
             className={`instance ${selectedClass} ${highlightedClass}`}
         >
             <span className="instance-emoji">{element.emoji || "❓"}</span>
-            <span className="instance-text">{element.name}</span>
+            <span className="instance-text">{capitalize(element.name)}</span>
         </div>
     );
 }
@@ -764,7 +765,7 @@ export function GameBoard() {
                                                 <span className="sidebar-item-emoji">
                                                     {element.emoji || "❓"}
                                                 </span>
-                                                <span className="sidebar-item-name">{element.name}</span>
+                                                <span className="sidebar-item-name">{capitalize(element.name)}</span>
                                                 {element.recipe === null && !isBaseElement && (
                                                     <span className="sidebar-item-badge">custom</span>
                                                 )}

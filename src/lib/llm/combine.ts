@@ -63,7 +63,7 @@ export async function combineElements(
         };
     }
 
-    const prompt = buildCombinePrompt(firstElement.name, secondElement.name);
+    const prompt = buildCombinePrompt(firstElement.name.toLowerCase(), secondElement.name.toLowerCase());
     let fullResponse = "";
 
     if (config.provider === "transformers") {
@@ -105,7 +105,7 @@ export async function combineElements(
 
     const newElement: Element = {
         id: generateId(parsed.name),
-        name: parsed.name,
+        name: parsed.name.toLowerCase(),
         emoji: parsed.emoji,
         discoveredAt: Date.now(),
         recipe: {
