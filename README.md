@@ -1,73 +1,43 @@
-# React + TypeScript + Vite
+# Alchemai 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**TL;DR:** [Infinite Craft](https://neal.fun/infinite-craft/) that runs directly in your browser. Powered by a fine-tuned [Liquid LFM2.5 1.2B Instruct](https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct) model. Inference via [transformers.js](https://github.com/huggingface/transformers.js).
 
-Currently, two official plugins are available:
+- **Play:** [Hugging Face Space](https://huggingface.co/spaces/alpaim/alchemai)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Model:** [alpaim/alchemai-LFM2.5-1.2B-Instruct](https://huggingface.co/alpaim/alchemai-LFM2.5-1.2B-Instruct)
 
-## React Compiler
+## About
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This project explores local AI and its applications in game development. The entire game logic—predicting what element results from combining two elements is handled by a compact fine-tuned 1.2B parameter language model running entirely in your browser.
 
-## Expanding the ESLint configuration
+The fine-tuning pipeline (dataset, data processing, training, and model export) will be released soon.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Why this matters:** This is a proof-of-concept that small, locally-running models can handle game mechanics - a niche but practical use case for game developers. And yeah, it's also just fun to play with.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Features
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **100% Browser-Based** - No server required, runs entirely client-side
+- **WebGPU Acceleration** - Thanks to transformers.js
+- **Offline Capable** - Once loaded, works without internet
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Quick Start
+
+```bash
+bun install
+bun run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The first load will download the quantized (q4) model.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Tech Stack
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Framework:** Vite + React 19 + TypeScript
+- **LLM Inference:** @huggingface/transformers v4
+- **State:** Zustand with localStorage persistence
+
+## How It Works
+
+1. Start with four base elements: **Fire**, **Water**, **Earth**, **Air**
+2. Drag elements onto each other to combine them
+3. The local LLM predicts what new element results from the combination
+4. Discover new elements and keep combining
