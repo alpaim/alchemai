@@ -492,55 +492,52 @@ export function GameBoard() {
     };
 
     const handleCanvasElementDragEnd = (id: string, x: number, y: number) => {
-        setCanvasElements((prev) => {
-            const draggedEl = prev.find((el) => el.id === id);
-            if (!draggedEl) return prev;
+        // Find elements before state update
+        const canvasElementsCurrent = canvasElementsRef.current;
+        const draggedEl = canvasElementsCurrent.find((el) => el.id === id);
+        if (!draggedEl) return;
 
-            const droppedOn = prev.find((el) => {
-                if (el.id === id) return false;
-                const dx = el.x - x;
-                const dy = el.y - y;
+        const droppedOn = canvasElementsCurrent.find((el) => {
+            if (el.id === id) return false;
+            const dx = el.x - x;
+            const dy = el.y - y;
 
-                return Math.sqrt(dx * dx + dy * dy) < 60;
-            });
-
-            if (droppedOn && settings) {
-                // Store positions before async operation
-                const droppedOnX = droppedOn.x;
-                const droppedOnY = droppedOn.y;
-                const draggedId = id;
-                const targetId = droppedOn.id;
-
-                combine(droppedOn.element.id, draggedEl.element.id).then((result) => {
-                    if (result) {
-                        setCanvasElements((current) => {
-                            // Check if elements still exist (haven't been combined already)
-                            const hasDragged = current.some((el) => el.id === draggedId);
-                            const hasTarget = current.some((el) => el.id === targetId);
-
-                            if (!hasDragged || !hasTarget) {
-                                // Already combined or removed, don't add duplicate
-                                return current;
-                            }
-
-                            return current
-                                .filter((el) => el.id !== draggedId && el.id !== targetId)
-                                .concat({
-                                    id: `canvas-${Date.now()}`,
-                                    x: droppedOnX,
-                                    y: droppedOnY,
-                                    element: result,
-                                });
-                        });
-                        setSelectedIds(new Set());
-                    }
-                });
-
-                return prev;
-            }
-
-            return prev.map((el) => (el.id === id ? { ...el, x, y } : el));
+            return Math.sqrt(dx * dx + dy * dy) < 60;
         });
+
+        if (droppedOn && settings) {
+            // Store positions for the result
+            const droppedOnX = droppedOn.x;
+            const droppedOnY = droppedOn.y;
+            const draggedId = id;
+            const targetId = droppedOn.id;
+
+            // Remove both elements from canvas immediately
+            setCanvasElements((prev) => prev.filter((el) => el.id !== draggedId && el.id !== targetId));
+
+            // Call combine OUTSIDE state updater (React StrictMode double-invokes updaters)
+            combine(droppedOn.element.id, draggedEl.element.id).then((result) => {
+                if (result) {
+                    setCanvasElements((current) => [
+                        ...current,
+                        {
+                            id: `canvas-${Date.now()}`,
+                            x: droppedOnX,
+                            y: droppedOnY,
+                            element: result,
+                        },
+                    ]);
+
+                    setSelectedIds(new Set());
+                }
+            });
+        }
+        else {
+            // Just update position if not dropped on another element
+            setCanvasElements((prev) =>
+                prev.map((el) => (el.id === id ? { ...el, x, y } : el)),
+            );
+        }
     };
 
     const clearCanvas = () => {

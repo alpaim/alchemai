@@ -187,6 +187,8 @@ export async function* streamCombination(
         do_sample: inferenceConfig.doSample,
     });
 
+    console.log("[DEBUG] Raw model output:", JSON.stringify(fullOutput));
+
     for (const char of fullOutput) {
         yield char;
     }
