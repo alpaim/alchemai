@@ -209,6 +209,7 @@ export function GameBoard() {
     } | null>(null);
     const [isSelecting, setIsSelecting] = useState(false);
     const justSelectedRef = useRef(false);
+    const isSelectingRef = useRef(false);
     const canvasElementsRef = useRef<CanvasElement[]>([]);
 
     const settings = useAppStore((state) => state.settings);
@@ -282,7 +283,7 @@ export function GameBoard() {
         [draggedId, getClosestTargetElement],
     );
 
-    // Handle keyboard delete
+    // Handle keyboard delete and escape
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Delete" || e.key === "Backspace") {
@@ -290,6 +291,9 @@ export function GameBoard() {
                     setCanvasElements((prev) => prev.filter((el) => !selectedIds.has(el.id)));
                     setSelectedIds(new Set());
                 }
+            }
+            else if (e.key === "Escape") {
+                setSelectedIds(new Set());
             }
         };
 
@@ -381,7 +385,13 @@ export function GameBoard() {
     const handleSelectionStart = (e: React.PointerEvent) => {
         // Skip selection on mobile
         if (isMobile) return;
-        if (e.target !== e.currentTarget) return;
+
+        // Don't start selection if clicking on a canvas element
+        const target = e.target as HTMLElement;
+        if (target.closest(".instance")) return;
+
+        // Clear selection when clicking on canvas background
+        setSelectedIds(new Set());
 
         const canvasEl = e.currentTarget as HTMLElement;
         const rect = canvasEl.getBoundingClientRect();
@@ -394,10 +404,22 @@ export function GameBoard() {
 
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
+        let hasStartedDragging = false;
+
         const handleMove = (moveEvent: PointerEvent) => {
             const r = canvasEl.getBoundingClientRect();
             const mx = moveEvent.clientX - r.left;
             const my = moveEvent.clientY - r.top;
+
+            if (!hasStartedDragging) {
+                const dx = mx - x;
+                const dy = my - y;
+
+                if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+                    hasStartedDragging = true;
+                    isSelectingRef.current = true;
+                }
+            }
 
             setSelectionRect((prev) => prev ? { ...prev, endX: mx, endY: my } : null);
         };
@@ -460,7 +482,11 @@ export function GameBoard() {
             return;
         }
 
-        if (e.target === e.currentTarget && !isSelecting) {
+        // Check if click is on a canvas element (or inside one)
+        const target = e.target as HTMLElement;
+        const isOnElement = target.closest(".instance") !== null;
+
+        if (!isOnElement && !isSelectingRef.current) {
             setSelectedIds(new Set());
         }
     };
