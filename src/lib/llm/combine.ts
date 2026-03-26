@@ -5,7 +5,7 @@ import {
     streamCombination as streamTransformers,
     isTransformersReady,
 } from "@/lib/llm/providers/transformers";
-import { alchemai_parser_no_emoji } from "@/lib/llm/parsers";
+import { alchemai_parser } from "@/lib/llm/parsers";
 import type { Element, CombinationResult, LLMConfig } from "@/lib/llm/types";
 import { generateId } from "@/lib/utils/id";
 
@@ -101,7 +101,7 @@ export async function combineElements(
         throw new Error(`Unknown provider: ${config.provider}`);
     }
 
-    const parsed = alchemai_parser_no_emoji(fullResponse);
+    const parsed = alchemai_parser(fullResponse);
 
     const newElement: Element = {
         id: generateId(parsed.name),

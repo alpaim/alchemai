@@ -171,7 +171,6 @@ export async function* streamCombination(
 
     const streamer = new TextStreamer(generator.tokenizer, {
         skip_prompt: true,
-        skip_special_tokens: false,
         callback_function: (text: string) => {
             fullOutput += text;
         },
