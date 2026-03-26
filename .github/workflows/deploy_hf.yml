@@ -39,6 +39,10 @@ jobs:
 
           cp -a ../dist/. .
 
+          git lfs install
+
+          git lfs track "*.wasm"
+
           git add .
           git commit -m "Auto-deploy new build" || echo "No changes to commit"
           git push
