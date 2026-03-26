@@ -6,7 +6,7 @@ import {
 
 import type { TransformersInferenceConfig } from "@/lib/llm/types";
 
-const MODEL_ID = "LiquidAI/LFM2.5-1.2B-Thinking-ONNX";
+const MODEL_ID = "alpaim/alchemai-LFM2.5-1.2B-Instruct-ONNX";
 const DTYPE = "q4";
 
 let generatorPromise: Promise<TextGenerationPipeline> | null = null;

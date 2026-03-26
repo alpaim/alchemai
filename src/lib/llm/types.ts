@@ -55,10 +55,10 @@ export interface ModelLoadingProgress {
     usingFallback?: boolean;
 }
 
-export const DEFAULT_MODEL_ID = "LiquidAI/LFM2.5-1.2B-Thinking-ONNX";
+export const DEFAULT_MODEL_ID = "alpaim/alchemai-LFM2.5-1.2B-Instruct-ONNX";
 
 export const AVAILABLE_MODELS = [
-    { id: DEFAULT_MODEL_ID, name: "LFM2.5-1.2B-Thinking (Recommended)", size: "~750MB" },
+    { id: DEFAULT_MODEL_ID, name: "alchemai LFM2.5 1.2B Instruct", size: "~750MB" },
 ] as const;
 
 export const DEFAULT_INFERENCE_CONFIG: TransformersInferenceConfig = {
