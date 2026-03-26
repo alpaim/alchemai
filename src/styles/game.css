@@ -759,6 +759,12 @@
         max-width: 300px;
     }
 
+    .thinking-card-mobile {
+        left: 50% !important;
+        top: 16px !important;
+        transform: translateX(-50%);
+    }
+
     .thinking-card-close {
         width: 32px;
         height: 32px;

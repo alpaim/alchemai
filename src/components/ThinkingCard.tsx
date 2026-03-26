@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { useAppStore } from "@/lib/stores/app";
 
@@ -6,9 +6,22 @@ export function ThinkingCard() {
     const thinkingCard = useAppStore((state) => state.thinkingCard);
     const setThinkingCard = useAppStore((state) => state.setThinkingCard);
 
-    // Clamp position within viewport bounds for mobile
+    // Mobile detection
+    const [isMobile, setIsMobile] = useState(
+        typeof window !== "undefined" ? window.innerWidth < 640 : false,
+    );
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
+
+        window.addEventListener("resize", handleResize);
+
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    // Clamp position within viewport bounds for desktop
     const position = useMemo(() => {
-        if (!thinkingCard) return { x: 0, y: 0 };
+        if (!thinkingCard || isMobile) return { x: 0, y: 0 };
 
         const cardWidth = 256; // w-64 = 16rem = 256px
         const cardHeight = 150; // approximate height
@@ -21,7 +34,7 @@ export function ThinkingCard() {
             x: Math.max(padding, Math.min(thinkingCard.position.x, maxX)),
             y: Math.max(padding, Math.min(thinkingCard.position.y, maxY)),
         };
-    }, [thinkingCard]);
+    }, [thinkingCard, isMobile]);
 
     if (!thinkingCard?.isOpen) {
         return null;
@@ -31,11 +44,19 @@ export function ThinkingCard() {
         <div
             style={{
                 position: "fixed",
-                left: position.x,
-                top: position.y,
                 zIndex: 1000,
+                ...(isMobile
+                    ? {
+                        left: "50%",
+                        top: "16px",
+                        transform: "translateX(-50%)",
+                    }
+                    : {
+                        left: position.x,
+                        top: position.y,
+                    }),
             }}
-            className="thinking-card"
+            className={`thinking-card ${isMobile ? "thinking-card-mobile" : ""}`}
         >
             <div className="thinking-card-header">
                 <div className="flex items-center gap-2">
